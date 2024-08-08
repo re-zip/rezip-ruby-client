@@ -30,7 +30,10 @@ module REZIP
       %i[get post patch put delete head].each do |method|
         define_method(method) do |path, **options, &block|
           headers = DEFAULT_HEADERS.merge(options.fetch(:headers, {}))
-          body    = begin
+          # TODO: Excon doesn't seem to like sub-sub domains, so we need to set Host header manually
+          headers["Host"] || headers["Host"] = @connection.connection.fetch(:host)
+
+          body = begin
             data = options.fetch(:body, "")
             if headers["Content-Type"] == "application/json" && data.instance_of?(Hash)
               data.to_json
