@@ -21,7 +21,7 @@ module REZIP
           json_opts: options.fetch(:json_opts, nil)
         }
 
-        opts[:username] = Excon::Utils.escape_uri(username) if username
+        opts[:user]     = Excon::Utils.escape_uri(username) if username
         opts[:password] = Excon::Utils.escape_uri(password) if password
 
         @connection = Excon.new(base_uri, opts)
