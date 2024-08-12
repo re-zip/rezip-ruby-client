@@ -12,6 +12,7 @@ end
 require "excon"
 require "json"
 require "minitest/autorun"
+require "pry"
 require "re-zip/api/client"
 
 Excon.defaults[:mock] = true
@@ -59,6 +60,11 @@ describe REZIP::API::Client do
     _, _, headers = *client.get("/ping")
 
     _(headers["Authorization"]).must_equal "Basic OnNlY3JldA=="
+
+    client = REZIP::API::Client.new(bearer: "token")
+    _, _, headers = *client.get("/ping")
+
+    _(headers["Authorization"]).must_equal "Bearer token"
   end
 
   describe "JSON <=> Hash conversion of body" do
@@ -275,7 +281,8 @@ describe REZIP::API::Client do
         request=#<struct REZIP::API::Client::Request method=:post, path="/upload", \
         body="<scrubbed for Content-Type image/png>", \
         headers={"User-Agent"=>"rezip-ruby-client, v#{REZIP::API::VERSION}", \
-        "Accept-Version"=>"2.0", "Content-Type"=>"image/png"}, query={"foo"=>"bar"}>>
+        "Accept"=>"application/json", "Accept-Language"=>"en-US", \
+        "Accept-Version"=>"2.0", "Content-Type"=>"image/png", "Host"=>"api.re-zip.com"}, query={"foo"=>"bar"}>>
       ERR
     end
   end

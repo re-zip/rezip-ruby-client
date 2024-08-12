@@ -7,13 +7,15 @@ module REZIP
   module API
     class Client
       DEFAULT_HEADERS = {
-        "User-Agent" => "rezip-ruby-client, v#{REZIP::API::VERSION}",
-        "Accept-Version" => "2.0"
+        "Accept" => "application/json",
+        "Accept-Language" => "en-US",
+        "Accept-Version" => "2.0",
+        "User-Agent" => "rezip-ruby-client, v#{REZIP::API::VERSION}"
       }.freeze
 
       Request = Struct.new(:method, :path, :body, :headers, :query) # rubocop:disable Lint/StructNewOverride
 
-      def initialize(bearer: nil, username: nil, password: nil, base_uri: "https://api.staging.re-zip.com", options: {})
+      def initialize(bearer: nil, username: nil, password: nil, base_uri: "https://api.re-zip.com", options: {})
         opts = {
           read_timeout: options.fetch(:read_timeout, 60),
           write_timeout: options.fetch(:write_timeout, 60),
@@ -33,7 +35,7 @@ module REZIP
 
       %i[get post patch put delete head].each do |method|
         define_method(method) do |path, **options, &block|
-          headers = DEFAULT_HEADERS.merge(@connection.data.fetch(:headers, {})).merge(options.fetch(:headers, {}))
+          headers = @connection.data.fetch(:headers, {}).merge(DEFAULT_HEADERS).merge(options.fetch(:headers, {}))
 
           # TODO: Excon doesn't seem to like sub-sub domains, so we need to set Host header manually
           headers["Host"] || headers["Host"] = @connection.connection.fetch(:host)
