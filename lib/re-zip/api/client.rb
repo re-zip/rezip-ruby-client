@@ -13,7 +13,7 @@ module REZIP
 
       Request = Struct.new(:method, :path, :body, :headers, :query) # rubocop:disable Lint/StructNewOverride
 
-      def initialize(username: nil, password: nil, base_uri: "https://api.re-zip.com", options: {})
+      def initialize(bearer: nil, username: nil, password: nil, base_uri: "https://api.staging.re-zip.com", options: {})
         opts = {
           read_timeout: options.fetch(:read_timeout, 60),
           write_timeout: options.fetch(:write_timeout, 60),
@@ -21,15 +21,20 @@ module REZIP
           json_opts: options.fetch(:json_opts, nil)
         }
 
-        opts[:user]     = Excon::Utils.escape_uri(username) if username
-        opts[:password] = Excon::Utils.escape_uri(password) if password
+        if bearer
+          opts[:headers]  = { "Authorization" => "Bearer #{bearer}" }
+        else
+          opts[:user]     = Excon::Utils.escape_uri(username) if username
+          opts[:password] = Excon::Utils.escape_uri(password) if password
+        end
 
         @connection = Excon.new(base_uri, opts)
       end
 
       %i[get post patch put delete head].each do |method|
         define_method(method) do |path, **options, &block|
-          headers = DEFAULT_HEADERS.merge(options.fetch(:headers, {}))
+          headers = DEFAULT_HEADERS.merge(@connection.data.fetch(:headers, {})).merge(options.fetch(:headers, {}))
+
           # TODO: Excon doesn't seem to like sub-sub domains, so we need to set Host header manually
           headers["Host"] || headers["Host"] = @connection.connection.fetch(:host)
 
